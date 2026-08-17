@@ -70,8 +70,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1aa79e62e7697b8e29b513a68abacf485adcd1fe8284a4316c5ae868e6633327"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-link",
 ]
 
@@ -80,6 +82,24 @@ name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
+
+[[package]]
+name = "crrdb-mcp"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "base64",
+ "chrono",
+ "rmcp",
+ "rusqlite",
+ "schemars",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
 
 [[package]]
 name = "darling"
@@ -496,22 +516,6 @@ dependencies = [
  "libsqlite3-sys",
  "smallvec",
  "sqlite-wasm-rs",
-]
-
-[[package]]
-name = "rust-template"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "base64",
- "rmcp",
- "rusqlite",
- "schemars",
- "serde",
- "serde_json",
- "thiserror",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

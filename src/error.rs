@@ -11,22 +11,45 @@ pub enum Error {
     #[error(
         "SQL error: {message}; Check the schema by calling `get_schema` and fix the SQL statement"
     )]
-    Sql {
-        message: String,
-        schema: Option<String>,
-    },
+    Sql { message: String },
     #[error(
-        "`query` is for readonly. For write operations, use `commit_records`/`modify_record`/`delete_record`/`create_table`/`alter_table`: {message}"
+        "`query` is for readonly. For write operations, use `commit_records`/`update_record`/`delete_record`/`create_table`/`alter_table`: {message}"
     )]
     ReadonlyViolation { message: String },
-    #[error("unique violation: {message}")]
+    #[error(
+        "unique violation: {message}; Check the schema by calling `get_schema` and fix the SQL statement by generating a new unique value for each unique column."
+    )]
     UniqueViolation { message: String },
-    #[error("unknown table: {table}; consider using `create_table` to create it first")]
-    UnknownTable { table: String },
     #[error(
         "missing required field: {message}; Check the schema by calling `get_schema` and fix the SQL statement"
     )]
     MissingRequired { message: String },
+    #[error("only a single statement must be specified")]
+    MultipleStatement,
+    #[error("no primary key defined for a table: {table}")]
+    NoPrimaryKey { table: String },
+    #[error(
+        "table description must be specified; explain what this table is for in natural language."
+    )]
+    MissingTableDescription,
+    #[error("column description error: {message}")]
+    ColumnDescription { column: String, message: String },
+    #[error(
+        "the reason for `ALTER TABLE` must be specified; explain the reason in nature language."
+    )]
+    MissingAlterTableReason,
+    #[error("`DROP COLUMN` is not allowed for conflict-free replications")]
+    DropColumnNotAllowed,
+    #[error("`RENAME COLUMN` is not allowed for conflict-free replications")]
+    RenameColumnNotAllowed,
+    #[error("Renaming table is not allowed for conflict-free replications")]
+    RenameTableNotAllowed,
+    #[error("altering the system tables is never allowed")]
+    AlterSystemTableNotAllowed,
+    #[error("mutating system tables is never allowed")]
+    SystemTableMutationNotAllowed { table: String },
+    #[error("cannot convert a JSON value to a DB value: {message}")]
+    JsonToDbValueConversion { value: String, message: String },
 }
 
 impl Error {
@@ -39,25 +62,24 @@ impl Error {
 
 impl From<rusqlite::Error> for Error {
     fn from(err: rusqlite::Error) -> Self {
-        if let rusqlite::Error::SqliteFailure(failure, message) = err {
-            let message = message.unwrap_or_else(|| "empty SQLite error message".to_string());
-            return match failure.extended_code {
-                ffi::SQLITE_CONSTRAINT_PRIMARYKEY | ffi::SQLITE_CONSTRAINT_UNIQUE => {
-                    Error::UniqueViolation { message }
-                }
-                ffi::SQLITE_CONSTRAINT_NOTNULL => Error::MissingRequired { message },
-                _ => match failure.code {
-                    ffi::ErrorCode::ReadOnly => Error::ReadonlyViolation { message },
-                    _ => Error::Sql {
-                        message,
-                        schema: None,
+        match err {
+            rusqlite::Error::SqliteFailure(failure, message) => {
+                let message = message.unwrap_or_else(|| "empty SQLite error message".to_string());
+                match failure.extended_code {
+                    ffi::SQLITE_CONSTRAINT_PRIMARYKEY | ffi::SQLITE_CONSTRAINT_UNIQUE => {
+                        Error::UniqueViolation { message }
+                    }
+                    ffi::SQLITE_CONSTRAINT_NOTNULL => Error::MissingRequired { message },
+                    _ => match failure.code {
+                        ffi::ErrorCode::ReadOnly => Error::ReadonlyViolation { message },
+                        _ => Error::Sql { message },
                     },
-                },
-            };
-        }
-        Error::Sql {
-            message: err.to_string(),
-            schema: None,
+                }
+            }
+            rusqlite::Error::MultipleStatement => Error::MultipleStatement,
+            _ => Error::Sql {
+                message: err.to_string(),
+            },
         }
     }
 }
