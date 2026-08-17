@@ -1,6 +1,6 @@
 # crrdb MCP
 
-A MCP (Model Context Protocol) for [crrdb](https://github.com/atman-project/crrdb).
+MCP (Model Context Protocol) for [crrdb](https://github.com/atman-project/crrdb).
 
 By connecting this MCP to your AI agent, you can store data to your local crrdb, and retrieve/analyze it.
 
