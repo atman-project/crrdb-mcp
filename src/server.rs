@@ -25,9 +25,9 @@ Conventions:
 - If there is no table that the client wants to use, call create_table.
 - When a value doesn't fit an existing table, consider alter_table (ADD COLUMN) before
 creating a new table.
-- The client is responsible for generating every row's primary key (id), which is
-a 26-char ULID (e.g., 01JGXK4YV0Q8Z3M9T2R5W7B1CD). AUTOINCREMENT is forbidden since
-crrdb supports conflict-free replication.
+- The client is responsible for generating every row's primary key. If a random unique
+value must be generated, generate a 26-char ULID (e.g., 01JGXK4YV0Q8Z3M9T2R5W7B1CD).
+AUTOINCREMENT is forbidden since crrdb supports conflict-free replication.
 - Put the user's utterance into `_raw` column verbatim — never a summary. `_said_at`
 column is the time of utterance, ISO8601.
 - When one utterance produces multiple rows, send them all in a single commit_records
@@ -94,7 +94,10 @@ impl Server {
     #[tool(
         description = "Create a new table. Specify `description` to explain what this table is for. Also, specify the description of each column. Plus, specify `reason` why this table should be created. \
         Always add `STRICT` to enable the strict typing mode. \
-        The table must have primary key, and system columns (`_raw` and `_said_at`). The system columns must be `TEXT NOT NULL`. \
+        The table must have primary key, and system columns (`_raw` and `_said_at`). \
+        The primary key can be a composite key. If there is no column to choose as primary key, \
+        add the `id` column as `TEXT PRIMARY KEY`, which is a 26-char ULID. \
+        The system columns must be `TEXT NOT NULL`. \
         The description of `_raw` must be 'An utterance that created this row'. \
         The description of `_said_at` must be 'Time of the utterance (ISO8601)'."
     )]
