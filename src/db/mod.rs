@@ -12,7 +12,8 @@ use rusqlite::{Connection, OpenFlags};
 
 pub struct Db {
     /// The read-write connection used for write operations created by
-    /// either the client or the server itself. Also, used for internal read operations that need to see uncommitted changes.
+    /// either the client or the server itself. Also, used for internal read
+    /// operations that need to see uncommitted changes.
     rw: Connection,
     /// The read-only connection used for read operations created by the client.
     ro: Connection,
