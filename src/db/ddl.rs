@@ -28,7 +28,8 @@ impl Db {
         let table = self.probe_create_table(sql)?;
         Self::check_table(&table, column_descs)?;
 
-        // Phase 2: In one tx, execute `sql` and add rows to `_schema_doc`/`_ddl_log`.
+        // Phase 2: In one tx, execute `sql` and add rows to
+        // `_schema_doc`/`_ddl_log`.
         let tx = self.rw.unchecked_transaction()?;
         tx.execute(sql, [])?;
         insert_table_schema_doc(&tx, &table.name, desc)?;
