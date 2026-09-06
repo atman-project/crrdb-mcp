@@ -17,7 +17,7 @@ use crate::{
     },
 };
 
-const INSTRUCTIONS: &str = r#"crrdb-mcp: a local database that can be accessible by
+pub(crate) const INSTRUCTIONS: &str = r#"crrdb-mcp: a local database that can be accessible by
 AI agents as well as traditional DB tools.
 
 Conventions:
@@ -52,13 +52,13 @@ impl ServerHandler for Server {
     }
 }
 
-#[tool_router]
+#[tool_router(vis = "pub(crate)")]
 impl Server {
     #[tool(
         description = "Return the full DDL plus natural-language descriptions of every \
         table and column. Call this first when touching the DB for the first time in a session."
     )]
-    fn get_schema(&self) -> CallToolResult {
+    pub(crate) fn get_schema(&self) -> CallToolResult {
         tool_result(self.execute(|db| db.get_schema()).map(|maybe_schema| {
             match maybe_schema {
                 Some(schema) => json!({"schema": schema}).to_string(),
@@ -72,7 +72,10 @@ impl Server {
 
     #[tool(description = "Return N rows (default 5) from a table. Use this \
         to get a feel for actual values — units, formatting conventions")]
-    fn sample_rows(&self, Parameters(params): Parameters<SampleRowsParams>) -> CallToolResult {
+    pub(crate) fn sample_rows(
+        &self,
+        Parameters(params): Parameters<SampleRowsParams>,
+    ) -> CallToolResult {
         tool_result(
             self.execute(|db| db.sample_rows(&params.table, params.limit()))
                 .map(|output| query_json(output).to_string()),
@@ -84,7 +87,7 @@ impl Server {
         If truncated, use aggregations or filters to reduce the result set. \
         Before any large query, first run a `SELECT count(*)` to check the table size."
     )]
-    fn query(&self, Parameters(params): Parameters<QueryParams>) -> CallToolResult {
+    pub(crate) fn query(&self, Parameters(params): Parameters<QueryParams>) -> CallToolResult {
         tool_result(
             self.execute(|db| db.query(&params.sql))
                 .map(|output| query_json(output).to_string()),
@@ -101,7 +104,10 @@ impl Server {
         The description of `_raw` must be 'An utterance that created this row'. \
         The description of `_said_at` must be 'Time of the utterance (ISO8601)'."
     )]
-    fn create_table(&self, Parameters(params): Parameters<CreateTableParams>) -> CallToolResult {
+    pub(crate) fn create_table(
+        &self,
+        Parameters(params): Parameters<CreateTableParams>,
+    ) -> CallToolResult {
         tool_result(
             self.execute(|db| {
                 db.create_table(
@@ -124,7 +130,10 @@ impl Server {
         It is recommened to use `ADD COLUMN` (NULL is allowed). `DROP COLUMN` and `RENAME COLUMN` are not allowed \
         for conflict-free replications."
     )]
-    fn alter_table(&self, Parameters(params): Parameters<AlterTableParams>) -> CallToolResult {
+    pub(crate) fn alter_table(
+        &self,
+        Parameters(params): Parameters<AlterTableParams>,
+    ) -> CallToolResult {
         tool_result(
             self.execute(|db| {
                 db.alter_table(
@@ -145,7 +154,7 @@ impl Server {
         description = "Commit records that an utterance requests, in one transaction. \
         Each row must have unique primary key values. If not, this tool will be failed."
     )]
-    fn commit_records(
+    pub(crate) fn commit_records(
         &self,
         Parameters(params): Parameters<CommitRecordsParams>,
     ) -> CallToolResult {
@@ -162,7 +171,7 @@ impl Server {
         description = "Update records in a table. Specify only columns that should be updated. \
         Be careful to not update records that the user doesn't want"
     )]
-    fn update_records(
+    pub(crate) fn update_records(
         &self,
         Parameters(params): Parameters<UpdateRecordsParams>,
     ) -> CallToolResult {
@@ -179,7 +188,7 @@ impl Server {
         description = "Remove records from a table. Call this only when the user explicitly wants. \
         Be careful to not remove records that the user doesn't want"
     )]
-    fn delete_records(
+    pub(crate) fn delete_records(
         &self,
         Parameters(params): Parameters<DeleteRecordsParams>,
     ) -> CallToolResult {
