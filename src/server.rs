@@ -72,7 +72,10 @@ impl Server {
 
     #[tool(description = "Return N rows (default 5) from a table. Use this \
         to get a feel for actual values — units, formatting conventions")]
-    pub(crate) fn sample_rows(&self, Parameters(params): Parameters<SampleRowsParams>) -> CallToolResult {
+    pub(crate) fn sample_rows(
+        &self,
+        Parameters(params): Parameters<SampleRowsParams>,
+    ) -> CallToolResult {
         tool_result(
             self.execute(|db| db.sample_rows(&params.table, params.limit()))
                 .map(|output| query_json(output).to_string()),
@@ -101,7 +104,10 @@ impl Server {
         The description of `_raw` must be 'An utterance that created this row'. \
         The description of `_said_at` must be 'Time of the utterance (ISO8601)'."
     )]
-    pub(crate) fn create_table(&self, Parameters(params): Parameters<CreateTableParams>) -> CallToolResult {
+    pub(crate) fn create_table(
+        &self,
+        Parameters(params): Parameters<CreateTableParams>,
+    ) -> CallToolResult {
         tool_result(
             self.execute(|db| {
                 db.create_table(
@@ -124,7 +130,10 @@ impl Server {
         It is recommened to use `ADD COLUMN` (NULL is allowed). `DROP COLUMN` and `RENAME COLUMN` are not allowed \
         for conflict-free replications."
     )]
-    pub(crate) fn alter_table(&self, Parameters(params): Parameters<AlterTableParams>) -> CallToolResult {
+    pub(crate) fn alter_table(
+        &self,
+        Parameters(params): Parameters<AlterTableParams>,
+    ) -> CallToolResult {
         tool_result(
             self.execute(|db| {
                 db.alter_table(

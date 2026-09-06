@@ -45,7 +45,8 @@ impl CrrdbMcp {
         }))
     }
 
-    /// The MCP server instructions — use as (part of) the model's system prompt.
+    /// The MCP server instructions — use as (part of) the model's system
+    /// prompt.
     pub fn instructions(&self) -> String {
         INSTRUCTIONS.to_string()
     }
