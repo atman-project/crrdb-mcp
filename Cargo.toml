@@ -3,6 +3,24 @@ name    = "crrdb-mcp"
 version = "0.0.1"
 edition = "2024"
 
+[lib]
+# staticlib: iOS .a for embedding in mobile apps (see the `ffi` feature).
+# lib: the MCP server binary and tests.
+crate-type = ["lib", "staticlib"]
+
+# Stable `uniffi-bindgen` binary that build scripts shell out to.
+[[bin]]
+name              = "uniffi-bindgen"
+path              = "src/bin/uniffi_bindgen.rs"
+required-features = ["bindgen"]
+
+[features]
+default = []
+# Embeddable FFI surface (Swift/Kotlin via UniFFI). Bundles SQLite so mobile
+# builds don't depend on the platform SDK's libsqlite3.
+ffi     = ["dep:uniffi", "rusqlite/bundled"]
+bindgen = ["ffi", "uniffi/cli"]
+
 [dependencies]
 anyhow = "1.0.104"
 base64 = "0.23.1"
@@ -16,3 +34,4 @@ thiserror = "2.0.20"
 tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
+uniffi = { version = "0.28", optional = true }
